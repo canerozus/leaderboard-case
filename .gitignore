@@ -1,0 +1,73 @@
+# ── OS / editor ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-*
+
+# ── Logs ────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Node / TypeScript ───────────────────────────────────────
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/
+.yarn-integrity
+dist/
+build/
+out/
+.tsbuildinfo
+*.tsbuildinfo
+coverage/
+.nyc_output/
+
+# ── Vite / Frontend ─────────────────────────────────────────
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/stats.html
+.cache/
+.parcel-cache/
+
+# ── Backend artifacts ───────────────────────────────────────
+backend/dist/
+backend/coverage/
+backend/.drizzle/
+
+# ── Env & secrets ───────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+secrets/
+.secrets
+
+# ── Docker / volumes (local dev data) ───────────────────────
+infrastructure/data/
+infrastructure/volumes/
+infrastructure/certbot/conf/
+infrastructure/certbot/www/
+*.sqlite
+*.sqlite3
+
+# ── Test / CI ───────────────────────────────────────────────
+.vitest-cache/
+playwright-report/
+test-results/
+
+# ── Misc ────────────────────────────────────────────────────
+.tmp/
+tmp/
+*.bak
+docs
