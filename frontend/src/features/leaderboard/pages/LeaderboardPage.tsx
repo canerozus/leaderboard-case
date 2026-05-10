@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Info, LogOut, Trophy } from 'lucide-react';
+import { History as HistoryIcon, Info, LogOut, Trophy } from 'lucide-react';
 import { useTop, useMe, useLbState } from '../hooks/useLeaderboard';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { Button } from '@/shared/components/Button';
@@ -12,6 +12,7 @@ import { PrizePoolTicker } from '../components/PrizePoolTicker';
 import { Countdown } from '../components/Countdown';
 import { RewardsModal } from '../components/RewardsModal';
 import { SelfBand } from '../components/SelfBand';
+import { HistoryDrawer } from '@/features/history/components/HistoryDrawer';
 import type { LbEntry } from '@/shared/types/api.types';
 
 export function LeaderboardPage() {
@@ -21,6 +22,7 @@ export function LeaderboardPage() {
   const logout = useAuthStore((s) => s.logout);
 
   const [rewardsOpen, setRewardsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [selfBandVisible, setSelfBandVisible] = useState(false);
   const meRowAnchor = useRef<HTMLDivElement>(null);
 
@@ -60,6 +62,9 @@ export function LeaderboardPage() {
           <div className="flex items-center gap-2">
             {state.data && <Countdown secondsUntilReset={state.data.secondsUntilReset} />}
             {state.data && <PrizePoolTicker value={state.data.prizePool} />}
+            <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)} aria-label="history">
+              <HistoryIcon size={14} />
+            </Button>
             <Button variant="ghost" size="sm" onClick={() => setRewardsOpen(true)} aria-label="rewards info">
               <Info size={14} />
             </Button>
@@ -94,6 +99,8 @@ export function LeaderboardPage() {
           distribution={state.data.distribution}
         />
       )}
+
+      <HistoryDrawer open={historyOpen} onClose={() => setHistoryOpen(false)} />
 
       {selfBandVisible && me.data?.rank && (
         <SelfBand
