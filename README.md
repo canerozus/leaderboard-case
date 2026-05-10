@@ -105,23 +105,19 @@ leaderboard-case/
 ├── Makefile                  # `make help` lists every command
 ├── docker-compose.yml        # local dev — full stack
 ├── docker-compose.prod.yml   # production stack (EC2 + nginx + certbot)
-├── .env.example              # dev env template (committed)
-├── .env.production.example   # prod env template (committed)
+├── .env.development          # dev env (committed; see .gitignore for rationale)
+├── .env.production           # prod env (committed)
 ├── backend/                  # Node 24 + Express + Drizzle + Mongoose + ioredis
 ├── frontend/                 # React 19 + Vite 8 + Tailwind 4 + TanStack Query + Zustand
 ├── infrastructure/
-│   ├── edge/                       # nginx + bundled SPA Dockerfile + nginx configs
-│   ├── ec2/                        # provisioning checklist + first-boot user-data
-│   └── scripts/                    # deploy.sh, seed.sh, reset-week.sh, certbot-renew.sh
-├── docs/
-│   ├── DESIGN.md                   # canonical engineering spec
-│   ├── CASE.md                     # the original Panteon brief
-│   ├── TEST.md                     # 3-layer test plan + checklist
-│   ├── findings-and-bugs/          # findings + bug log per branch
-│   └── playwright/                 # regression screenshots
+│   ├── edge/                 # nginx + bundled SPA Dockerfile + nginx configs
+│   ├── ec2/                  # provisioning checklist + first-boot user-data
+│   └── scripts/              # deploy.sh, seed.sh, reset-week.sh, certbot-renew.sh
 ├── README.md                 # this file
+├── DESIGN.md                 # canonical engineering spec
 ├── PRD.md                    # product requirements (goals / scope / acceptance)
 ├── ARCHITECTURE.md           # diagram + scale-out path
+├── TEST.md                   # 3-layer test plan + checklist
 └── AI_WORKFLOW.md            # AI tools, flow, judgment calls
 ```
 
@@ -129,7 +125,7 @@ The backend and frontend are **separate projects** with no shared workspace tool
 
 ## Known limitations
 
-These are real and documented (DESIGN.md §11, `docs/findings-and-bugs/finding_*.md`):
+These are real and documented (DESIGN.md §11):
 
 - **Fail-open is not the steady-state operating mode.** The Mongo fallback path is sub-second on healthy hardware but materially slower than the cached path. If Redis is down for more than ~5 minutes at 2 M-DAU scale, the right move is to route around at the infra layer, not to keep serving from the slow path.
 - **Rate-limit fails open during a Redis outage** — acceptable for a leaderboard, would not be acceptable for billing. The trade-off is documented; the code path treats `null` from `acquireRateLimit` as "allow."
