@@ -27,7 +27,7 @@ CMD ["npm", "run", "dev:api"]
 # ─── build ──────────────────────────────────────────────────────────────
 FROM base AS build
 COPY . .
-RUN npm run build
+RUN mkdir -p migrations && npm run build
 
 # ─── prod ───────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS prod
