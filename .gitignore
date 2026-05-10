@@ -47,6 +47,7 @@ backend/.drizzle/
 .env
 .env.*
 !.env.example
+!.env.production.example
 *.pem
 *.key
 *.crt
@@ -72,3 +73,7 @@ tmp/
 *.bak
 docs
 .playwright-mcp
+
+# Production env files — covered by .env.* above; explicit lines for clarity
+.env.production
+.env.local

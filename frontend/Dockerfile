@@ -1,3 +1,13 @@
+# frontend/Dockerfile — local dev only.
+# Targets:
+#   base  — shared layer (deps installed)
+#   dev   — vite dev server with HMR; consumed by docker-compose.yml (root)
+#   build — produces dist/ for offline use (e.g. CI artifact upload)
+#
+# Production deliberately does NOT use this Dockerfile. The SPA is bundled INTO the
+# edge container — see infrastructure/edge/Dockerfile, which re-runs `npm run build`
+# against frontend/ as its first stage.
+
 # --- base: install deps once, reused by dev + build ---------------------------
 FROM node:24-alpine AS base
 WORKDIR /app
