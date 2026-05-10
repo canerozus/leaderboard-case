@@ -5,7 +5,7 @@ import pinoHttp from 'pino-http';
 import { logger } from './shared/lib/logger.js';
 import { errorHandler } from './shared/middleware/errorHandler.middleware.js';
 import { CacheService } from './shared/cache/cache.service.js';
-import { authRoutes } from './features/auth/auth.routes.js';
+import { makeAuthRoutes } from './features/auth/auth.routes.js';
 import { makeScoreRoutes } from './features/score/score.routes.js';
 import { makeLeaderboardRoutes } from './features/leaderboard/leaderboard.routes.js';
 import { makeMeRoutes } from './features/me/me.routes.js';
@@ -34,7 +34,7 @@ export function buildApp(deps: AppDeps): Express {
     });
   });
 
-  app.use('/api/v1/auth',        authRoutes);
+  app.use('/api/v1/auth',        makeAuthRoutes(deps.cache));
   app.use('/api/v1/score',       makeScoreRoutes(deps.cache));
   app.use('/api/v1/leaderboard', makeLeaderboardRoutes(deps.cache));
   app.use('/api/v1/me',          makeMeRoutes(deps.cache));

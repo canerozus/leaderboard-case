@@ -26,6 +26,7 @@ describe('CacheService — fail-open contract: every method returns null on Redi
   test('acquireRateLimit', async () => { expect(await makeCache().acquireRateLimit('u', 1)).toBeNull(); });
   test('acquireRehydrateLock', async () => { expect(await makeCache().acquireRehydrateLock(1, 30)).toBeNull(); });
   test('releaseRehydrateLock', async () => { expect(await makeCache().releaseRehydrateLock(1)).toBeNull(); });
+  test('setUserProfile', async () => { expect(await makeCache().setUserProfile('u', 'Display', 'US')).toBeNull(); });
   test('bulkZAdd', async () => { expect(await makeCache().bulkZAdd('lb:1', [{ userId: 'u', score: 1 }])).toBeNull(); });
   test('ping returns false (does not throw)', async () => { expect(await makeCache().ping()).toBe(false); });
 });

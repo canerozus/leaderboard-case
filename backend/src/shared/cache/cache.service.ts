@@ -127,6 +127,15 @@ export class CacheService {
     catch (err) { this.logger.warn({ err, weekId }, 'cache.releaseRehydrateLock failed'); return null; }
   }
 
+  async setUserProfile(userId: string, displayName: string, country?: string): Promise<void | null> {
+    try {
+      await this.redis.hset(USER_KEY(userId), { displayName, country: country ?? '' });
+    } catch (err) {
+      this.logger.warn({ err, userId }, 'cache.setUserProfile failed');
+      return null;
+    }
+  }
+
   async bulkZAdd(key: string, members: Array<{ userId: string; score: number }>): Promise<void | null> {
     if (members.length === 0) return;
     try {
