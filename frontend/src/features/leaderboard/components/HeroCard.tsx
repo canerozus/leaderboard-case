@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { TrendingUp, Zap } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
 import { Skeleton } from '@/shared/components/Skeleton';
@@ -13,13 +12,6 @@ export function HeroCard() {
   const profile = useMeProfile();
   const tap     = useTapToEarn();
   const pendingDelta = useLeaderboardStore((s) => s.pendingDelta);
-  const clearPending = useLeaderboardStore((s) => s.clearPendingDelta);
-
-  useEffect(() => {
-    if (me.data && pendingDelta > 0 && me.isFetching === false) {
-      clearPending();
-    }
-  }, [me.data, me.isFetching, pendingDelta, clearPending]);
 
   if (me.isLoading || profile.isLoading) return <HeroCardSkeleton />;
 

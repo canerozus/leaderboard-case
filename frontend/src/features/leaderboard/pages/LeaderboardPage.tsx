@@ -54,12 +54,12 @@ export function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-canvas-50 bg-grid">
       <div className="max-w-3xl mx-auto p-4 lg:p-6 space-y-4">
-        <header className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="text-accent-400" />
-            <h1 className="text-lg font-display font-semibold tracking-tight">Weekly leaderboard</h1>
+        <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Trophy className="text-accent-400 shrink-0" />
+            <h1 className="text-base sm:text-lg font-display font-semibold tracking-tight truncate">Weekly leaderboard</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {state.data && <Countdown secondsUntilReset={state.data.secondsUntilReset} />}
             {state.data && <PrizePoolTicker value={state.data.prizePool} />}
             <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)} aria-label="history">

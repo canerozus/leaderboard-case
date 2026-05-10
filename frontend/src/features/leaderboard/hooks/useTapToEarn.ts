@@ -13,12 +13,19 @@ export function useTapToEarn() {
 
   return useMutation({
     mutationFn: () => leaderboardApi.submit(DELTA),
-    onMutate: () => {
+    onMutate: async () => {
+      // Cancel any in-flight /me poll so a stale pre-tap response can't race
+      // ahead of the optimistic update and clear it on arrival.
+      await qc.cancelQueries({ queryKey: lbKeys.me() });
       addPending(DELTA);
       return { delta: DELTA };
     },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: lbKeys.me() });
+    onSuccess: async (_data, _vars, context) => {
+      // Wait for the post-mutation /me refetch to land *before* draining the
+      // optimistic delta — otherwise the score would briefly drop back to the
+      // pre-tap value while the new fetch is in flight.
+      await qc.invalidateQueries({ queryKey: lbKeys.me() });
+      if (context) rollbackPending(context.delta);
       void qc.invalidateQueries({ queryKey: lbKeys.top() });
       void qc.invalidateQueries({ queryKey: lbKeys.state() });
     },

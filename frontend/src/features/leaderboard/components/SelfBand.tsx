@@ -15,7 +15,7 @@ export function SelfBand({ rank, score, visible, onJumpToMe }: SelfBandProps) {
       type="button"
       onClick={onJumpToMe}
       className={cn(
-        'sticky bottom-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-3 rounded-full',
+        'fixed bottom-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-3 rounded-full',
         'bg-accent-500 text-canvas-100 font-semibold px-4 py-2 shadow-glow',
         'transition-opacity duration-300',
         visible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none',
