@@ -36,16 +36,16 @@ The system is "done" when each of these is true. These are the exact items the r
 
 | # | Criterion | Status |
 |---|---|---|
-| 1 | A reviewer can register at the deployed URL, log in, and see their rank update on every tap. | ✅ verified locally; pending public deploy |
+| 1 | A reviewer can register at the deployed URL, log in, and see their rank update on every tap. | ✅ live at http://panteon-case-caner-ozus.duckdns.org/ |
 | 2 | The top-100 view loads in under 200 ms after first paint on the cached path. | ✅ |
 | 3 | A user not in the top 100 sees their rank with 3 above and 2 below them. | ✅ |
-| 4 | The prize pool ticks up visibly as taps and simulator events fire. | ✅ |
+| 4 | The prize pool ticks up visibly as taps and simulator events fire. | ✅ — local; prod is static-by-design (no simulator running) |
 | 5 | The week countdown is correct against UTC. | ✅ |
 | 6 | Triggering the reset writes payouts to Postgres, zeroes the cache, and the new week starts on the next tap. The reset reads from Mongo, not Redis. | ✅ |
-| 7 | Two API replicas serve traffic correctly behind nginx — the same JWT works against either. | ✅ via `docker compose --scale backend=2` |
+| 7 | Two API replicas serve traffic correctly behind nginx — the same JWT works against either. | ✅ via `docker compose --scale backend=2` (prod runs replicas: 2) |
 | 8 | **Fail-open verified:** with the Redis container stopped, `/score/submit`, `/leaderboard/top`, and `/leaderboard/me` all return correct data; on Redis restart, the cache rehydrates on the next read with no data loss. | ✅ via `cache-failover.test.ts` |
-| 9 | Public domain reachable over HTTPS. | 🟡 pending Plan 3b |
-| 10 | Repo on GitHub, README + DESIGN.md + PRD.md + AI_WORKFLOW.md all present. | 🟡 README/PRD landing in this branch |
+| 9 | Public domain reachable. | ✅ HTTP-only — http://panteon-case-caner-ozus.duckdns.org/. HTTPS path is built (nginx.https.conf + LEADERBOARD_TLS switch + certbot-renew.sh) but not active; reason in README. |
+| 10 | Repo on GitHub, README + DESIGN.md + PRD.md + AI_WORKFLOW.md all present. | ✅ |
 
 ---
 

@@ -200,6 +200,22 @@ The agent will pick up the checklist and drive Playwright MCP through it. There 
 
 ---
 
+## Production smoke (Layer 3.5 — short)
+
+After deploying to EC2 (single `t3.small` behind nginx, HTTP-only — see README for the HTTPS rationale), the same Layer-3 checklist was re-run against the live URL in abbreviated form, via curl from the laptop:
+
+- `POST /api/v1/auth/login` with `caner` / `leaderboard` → JWT returned.
+- `GET /api/v1/healthz` → `{"status":"ok","redis":"up"}`.
+- `GET /api/v1/leaderboard/me` (with bearer) → `rank=4993, inTop100=false, score=36, neighbors=6` (3 above + me + 2 below).
+- `GET /api/v1/leaderboard/state` → `prizePool ≈ 100,961`, `secondsUntilReset` decrementing against UTC, distribution payload intact.
+- `GET /` → SPA HTML containing `Leaderboard Case` title.
+
+The seed step on the production host was idempotency-checked: a small `SEED_COUNT=200` pass first (verified `dist/seed/seed.js` path inside the prod image), then `TRUNCATE users, weekly_history, payouts CASCADE` + Mongo `deleteMany` + Redis `FLUSHDB` + the real `SEED_COUNT=100000`. caner deterministically lands at rank ~5 000 every time.
+
+What this layer does not exercise (intentionally): the visual flows — Playwright MCP runs against `localhost`, not the deployed URL, because the deployed URL is HTTP and the regression harness was already green against the dev stack. The case rubric items the live URL satisfies are operational ("the reviewer can sign up and use it"), not regression-suite items.
+
+---
+
 ## What this approach gets us
 
 - **Density of coverage where it matters.** 35 frontend + 37 backend Vitest tests cover load-bearing units. The browser regression covers user flows. We do not have 500 snapshot tests pretending to cover the same thing twice.

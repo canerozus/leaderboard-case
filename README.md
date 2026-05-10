@@ -4,9 +4,11 @@ A weekly leaderboard system for an idle/clicker game with ~10 M registered playe
 
 Submitted as a Panteon take-home case.
 
-- **Deployed:** _<add domain after Plan 3b deploy>_
+- **Deployed:** http://panteon-case-caner-ozus.duckdns.org/ (HTTP-only — see note below)
 - **Demo account:** `caner` / `leaderboard` (lands at rank ~5 000 against the 100 000-user seed)
 - **Tech:** Node 24 + TypeScript, Express, PostgreSQL, MongoDB, Redis · React 19 + Vite 8 + Tailwind 4 · Docker Compose for everything
+
+> **HTTPS note:** the deployed instance runs HTTP-only. Let's Encrypt's multi-region validators kept timing out against Duck DNS's sometimes-laggy NS servers, and burning through LE's 5-failures-per-hour rate limit chasing a free-DNS quirk wasn't a good trade for the submission deadline. The TLS path is fully built — `infrastructure/edge/nginx.https.conf`, the `LEADERBOARD_TLS` entrypoint switch, and `infrastructure/scripts/certbot-renew.sh` are all in the repo and ready to go the moment the deployment moves behind a real domain (or onto ALB + ACM per `ARCHITECTURE.md`). Until then, Chrome will flag the URL as "Not secure" — the app itself is unaffected.
 
 ## A note on the live demo
 
