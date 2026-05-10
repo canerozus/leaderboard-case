@@ -8,6 +8,25 @@ Submitted as a Panteon take-home case.
 - **Demo account:** `caner` / `leaderboard` (lands at rank ~5 000 against the 100 000-user seed)
 - **Tech:** Node 24 + TypeScript, Express, PostgreSQL, MongoDB, Redis · React 19 + Vite 8 + Tailwind 4 · Docker Compose for everything
 
+## A note on the live demo
+
+The deployed leaderboard reflects a **static seeded state** — the demo-traffic simulator (`backend/seed/demo-traffic.ts`) is intentionally **not** running in production. Two reasons:
+
+1. It would write fake winners into `weekly_history` every Monday, polluting the archive with synthetic data forever.
+2. The architecture is fully demonstrated without it. Everything that defines the product is visible from the deployed URL: the self+neighbors view (caner is at rank ~5 000), the podium, the countdown ticking against UTC, and — most importantly — the optimistic UI when you click **Tap to earn**.
+
+So the prize pool sits still by design. To see motion you have two options:
+
+- Click **Tap to earn** on the deployed URL. The optimistic increment lands instantly; the next 7-second `/leaderboard/me` poll reconciles with the server. That round-trip is the load-bearing UX claim of this submission.
+- Run the simulator locally:
+
+  ```bash
+  git clone <repo-url> && cd leaderboard-case
+  make full-stack-up && make seed && make seed-traffic
+  ```
+
+The full rationale ("not a worker job, not deployed to production") is in `DESIGN.md` §5.4 and §10.3.
+
 ## What this delivers
 
 - **`POST /score/submit`** durable in MongoDB, best-effort cached in Redis. The endpoint never hides a Mongo failure behind a Redis success.

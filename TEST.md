@@ -1,6 +1,6 @@
 # Test Plan & Story — Leaderboard Case
 
-**Author:** Caner Özüş (with Claude Code)
+**Author:** Caner Özüş
 **Updated:** 2026-05-10
 
 This document describes how the leaderboard system was tested. It is a record of what we actually did, not an aspirational checklist. The story has three layers, each with a different actor, a different feedback loop, and a different goal:
