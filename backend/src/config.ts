@@ -12,7 +12,7 @@ const Schema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('7d'),
   BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(10),
-  TAP_RATE_LIMIT_TTL_SEC: z.coerce.number().int().positive().default(1),
+  TAP_RATE_LIMIT_TTL_SEC: z.coerce.number().int().nonnegative().default(1),
 });
 
 export type Config = z.infer<typeof Schema>;
