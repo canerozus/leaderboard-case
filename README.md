@@ -49,9 +49,9 @@ Requires Docker Desktop, GNU Make, and `git`.
 
 ```bash
 git clone <repo-url> leaderboard-case && cd leaderboard-case
-cp .env.example .env
 
 # one command brings up frontend + api + worker + postgres + mongo + redis
+# (env files .env.development / .env.production are committed — see .gitignore)
 make full-stack-up
 
 # seed 100k users + power-law scores (caner / leaderboard at rank ~5000)

@@ -44,10 +44,16 @@ backend/coverage/
 backend/.drizzle/
 
 # ── Env & secrets ───────────────────────────────────────────
+# Default rule: ignore everything that looks like an env file.
 .env
 .env.*
-!.env.example
-!.env.production.example
+# Exceptions: this is a take-home submission, so .env.development and
+# .env.production are committed with stable values. The reviewer can
+# `git clone && make full-stack-up` (or `make prod-up`) without a
+# "fill in the blanks" detour. In a real production project these would
+# stay ignored and secrets would come from Secrets Manager / Vault.
+!.env.development
+!.env.production
 *.pem
 *.key
 *.crt
@@ -74,6 +80,6 @@ tmp/
 docs
 .playwright-mcp
 
-# Production env files — covered by .env.* above; explicit lines for clarity
-.env.production
+# Local overrides — always ignored
 .env.local
+.env.production.local
