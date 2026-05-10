@@ -112,6 +112,7 @@ The current Compose deployment is sized for the case demo. The path to real load
 | `backend × 2` on EC2 | **ECS Fargate behind ALB**, autoscale on CPU + ALB request count | Stateless API → Fargate fits perfectly. |
 | `worker × 1` on EC2 | **ECS Fargate scheduled task** (EventBridge cron) | Singleton task — respects the advisory-lock contract. |
 | `edge` (nginx) | **ALB + ACM** (TLS); **CloudFront + S3** for the SPA | Managed TLS; SPA from a CDN. |
+| `git clone` + `docker build` on EC2 | **GitHub Actions** builds → push to **ECR** → `aws ecs update-service` | Artifact-driven deploys + one-command rollback to the previous task-definition revision. |
 | `.env.production` | **AWS Secrets Manager** (DB creds, JWT) + **SSM Parameter Store** (config) | No secrets on disk; rotation handled. |
 | Pino → docker logs | **CloudWatch Logs** + Logs Insights | Structured-log queries out of the box. |
 
@@ -119,8 +120,10 @@ The API and worker move to Fargate with **zero code changes** — they're statel
 
 ## What we'd add with more time
 
-- Real metrics + tracing (Prometheus/Grafana or CloudWatch dashboards for cache-down rate, rehydration time, cron duration, p95 read latency).
+The deploy story above (`Atlas + ElastiCache + RDS + ECR + Fargate + ALB/ACM + CloudFront/S3 + Secrets Manager + CloudWatch + GitHub Actions`) is the headline item — the current single-EC2 + Compose setup is a deliberate trade-off for the case timeline. The README's "Next steps" section walks through each piece of that move. Beyond infra:
+
+- Real metrics + tracing (OpenTelemetry → CloudWatch or Prometheus/Grafana) for cache-down rate, rehydration time, cron duration, p95 read latency.
 - Anti-cheat: server-side delta plausibility, pattern flags, per-IP write ceilings, device fingerprinting at the edge.
 - Multi-region read replicas with eventual consistency on rank ordering.
 - SSE on `/leaderboard/stream` backed by Redis pub/sub for real-time rank-change pushes — additive to the polling design, not a rewrite.
-- Visual regression baselines (Playwright snapshots compared against committed PNGs).
+- Visual regression baselines (Playwright snapshots compared against committed PNGs in CI).

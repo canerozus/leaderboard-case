@@ -82,9 +82,8 @@
 | List virtualization | `@tanstack/react-virtual` | Top 100 isn't huge, but virtualization is cheap insurance for mobile |
 | Animation | `framer-motion` (small, scoped) | Two motion moments only |
 | Testing | Vitest (both ends) + testcontainers | Fast, TS-native, real services in integration |
-| Containerization | Docker + Docker Compose; `node:24-alpine` base; multi-stage backend Dockerfile (`base`/`dev`/`build`/`prod`); multi-stage frontend Dockerfile (`base`/`dev`/`build`); production SPA bundled into the edge image | Same image graph drives both dev and prod; `docker compose up` runs the full stack locally |
+| Containerization | Docker + Docker Compose; `node:24-bookworm-slim` base; multi-stage backend Dockerfile (`base`/`dev`/`build`/`prod`); multi-stage frontend Dockerfile (`base`/`dev`/`build`); production SPA bundled into the edge image | Same image graph drives both dev and prod; `docker compose up` runs the full stack locally |
 | Reverse proxy | nginx + certbot/Let's Encrypt | Standard |
-| CI | GitHub Actions | Optional |
 
 ---
 
@@ -811,10 +810,9 @@ nginx upstream config marks a backend instance unhealthy after consecutive `/hea
 
 `certbot --nginx` for Let's Encrypt; renewal via system cron.
 
-### 9.4 CI (optional)
+### 9.4 CI / CD
 
-- **PR check** workflow: typecheck + lint + tests (including `cache-failover.test.ts`).
-- **Deploy on main** workflow: build images, push to GHCR, SSH to EC2, `docker compose pull && up -d`.
+Out of scope for this submission. Deploy is a manual `git push` → `infrastructure/scripts/deploy.sh` (SSH to EC2 + `git pull` + `docker compose up -d --build`). With more time, the natural shape is described in §9.5 (managed services + ECR + ECS Fargate); a CI step that builds images and pushes to ECR is part of that picture, not bolted onto the current single-EC2 deployment.
 
 ### 9.5 Scale-out to managed services
 
@@ -828,6 +826,7 @@ The case scopes a single-EC2 deployment, but the obvious next step at real load 
 | `backend × 2` on EC2 | **ECS Fargate behind ALB**; autoscale on CPU + ALB request count | Stateless API → Fargate is the right fit; no instance management. |
 | `worker × 1` on EC2 | **ECS Fargate scheduled task** for `weekly-reset` (EventBridge cron) | Worker doesn't need long-running compute; EventBridge handles the schedule and retries. |
 | `nginx + certbot` | **ALB + ACM** (TLS); **CloudFront + S3** for the SPA | Managed TLS termination; SPA served as a CDN-fronted static site. |
+| `git clone` + `docker build` on EC2 | **GitHub Actions** build → push to **ECR** → `aws ecs update-service` | Artifact-driven deploys; rollback is `aws ecs update-service --task-definition <previous-revision>`. No more "build on the production host". |
 | `.env` file | **AWS Secrets Manager** (DB creds, JWT secret) + **SSM Parameter Store** (non-secret config) | No secrets on disk; rotation handled. |
 | Pino → stdout → docker logs | **CloudWatch Logs** (Fargate native) + Logs Insights queries | Default destination on Fargate; structured-log queries out of the box. |
 

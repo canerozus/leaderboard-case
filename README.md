@@ -136,4 +136,19 @@ These are real and documented (DESIGN.md §11, `docs/findings-and-bugs/finding_*
 
 ## Next steps if this became a real product
 
-The DESIGN.md §9.5 scale-out table maps each container to its managed AWS equivalent (Atlas, ElastiCache, RDS, Fargate, ALB + ACM, CloudFront + S3). The codebase is already compatible — stateless API, env-only config, JWT auth — so the move is connection-string + secrets-manager work, not a rewrite.
+The current deploy is **single EC2 + Docker Compose** — a deliberate trade-off for the case timeline. The codebase is already compatible with managed services (stateless API, env-only config, JWT auth, no local file state), so the move is connection-string + secrets-manager work, not a rewrite. Concretely, with more time:
+
+- **Data tier → managed.** `mongo` container → **MongoDB Atlas** (M30+, multi-AZ replica set, point-in-time restore — Mongo is the primary score store, this is non-negotiable at real scale). `postgres` → **RDS for PostgreSQL** Multi-AZ. `redis` → **ElastiCache for Redis** (multi-AZ replica). Even with the fail-open contract in place, faster Redis recovery means less time on the slow Mongo aggregation path.
+- **Compute tier → Fargate.** `backend × 2` → **ECS Fargate behind an ALB**, autoscaling on CPU + ALB request count. `worker × 1` → **ECS Fargate scheduled task** triggered by **EventBridge** (singleton task, respects the Postgres advisory-lock contract for the weekly cron).
+- **Edge → ALB + ACM + CloudFront + S3.** Drop the nginx + certbot containers. **ALB** terminates TLS via **ACM**; the API runs behind it. The SPA gets hashed-asset bundling at build time, uploads to **S3**, fronted by **CloudFront** with long-cache headers. No more host-managed certs, no more nginx config to babysit.
+- **Image registry + CI/CD.** Build images in **GitHub Actions** on every merge to main, push to **ECR**, trigger an **ECS service deployment** via `aws ecs update-service`. The PR check workflow runs typecheck + lint + the full Vitest suite (including the `cache-failover.test.ts` testcontainers integration). No more "git pull and rebuild on the EC2 host" — deploys become artifact-driven, rollback is `aws ecs update-service --task-definition <prev-revision>`.
+- **Secrets → Secrets Manager + SSM.** `.env.production` goes away. DB credentials, JWT secret, Let's Encrypt email → **AWS Secrets Manager** (with automatic rotation). Non-secret config (LOG_LEVEL, IMAGE_TAG) → **SSM Parameter Store**. Fargate task definitions reference both at task-launch time. Nothing on disk.
+- **Observability → CloudWatch + Logs Insights.** Pino's stdout JSON lands directly in CloudWatch Logs on Fargate. **Logs Insights** queries replace `docker logs | grep`. **CloudWatch Metrics** + a dashboard for the four numbers that matter: cache-down rate, rehydration time, cron duration, p95 read latency.
+- **Beyond infra:**
+  - Real metrics + tracing (OpenTelemetry → CloudWatch or Prometheus/Grafana).
+  - Anti-cheat: server-side delta plausibility, pattern flags, per-IP write ceilings, optional device fingerprinting at the edge.
+  - Multi-region read replicas with eventual consistency on rank ordering.
+  - SSE on `/leaderboard/stream` backed by Redis pub/sub for real-time rank-change pushes — additive to the polling design, not a rewrite.
+  - Visual regression baselines (Playwright snapshots compared against committed PNGs in CI).
+
+The full per-container mapping with rationale is in DESIGN.md §9.5 and ARCHITECTURE.md.
