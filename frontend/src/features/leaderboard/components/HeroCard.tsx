@@ -36,13 +36,13 @@ export function HeroCard() {
         )}
       </div>
 
-      <div className="flex items-baseline gap-3 mb-4">
+      <div className="flex flex-col items-center sm:flex-row sm:items-baseline gap-1 sm:gap-3 mb-5 sm:mb-4">
         <span className="text-5xl font-display font-semibold tabular text-zinc-100">{formatRank(rank)}</span>
         <span className="text-zinc-500">{profile.data?.user.displayName}</span>
       </div>
 
-      <div className="flex items-end justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="text-center sm:text-left">
           <div className="text-xs uppercase tracking-widest text-zinc-500 mb-0.5">Weekly score</div>
           <div className="text-2xl font-mono tabular text-accent-400">{formatScore(score)}</div>
         </div>
@@ -53,6 +53,7 @@ export function HeroCard() {
           onClick={() => tap.mutate()}
           disabled={tap.isPending}
           aria-label="tap to earn"
+          className="w-full sm:w-auto"
         >
           <Zap size={18} /> Tap to earn
         </Button>

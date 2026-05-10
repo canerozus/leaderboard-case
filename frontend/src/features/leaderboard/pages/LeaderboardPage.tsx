@@ -50,24 +50,29 @@ export function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-canvas-50 bg-grid">
-      <div className="max-w-3xl mx-auto p-4 lg:p-6 space-y-4">
-        <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+      <div className="max-w-3xl lg:max-w-4xl mx-auto p-4 lg:p-6 space-y-4">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 min-w-0">
             <Trophy className="text-accent-400 shrink-0" />
             <h1 className="text-base sm:text-lg font-display font-semibold tracking-tight truncate">Weekly leaderboard</h1>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {state.data && <Countdown secondsUntilReset={state.data.secondsUntilReset} />}
-            {state.data && <PrizePoolTicker value={state.data.prizePool} />}
-            <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)} aria-label="history">
-              <HistoryIcon size={14} />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setRewardsOpen(true)} aria-label="rewards info">
-              <Info size={14} />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={logout} aria-label="log out">
-              <LogOut size={14} />
-            </Button>
+          {/* Right cluster — one flex item to the header; internally column on mobile (pills above buttons), row on desktop (pills then buttons) */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2 sm:flex-wrap sm:justify-end">
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              {state.data && <Countdown secondsUntilReset={state.data.secondsUntilReset} />}
+              {state.data && <PrizePoolTicker value={state.data.prizePool} />}
+            </div>
+            <div className="flex items-center gap-3 sm:gap-2 justify-center sm:justify-start">
+              <Button variant="ghost" size="sm" className="h-11 px-5 sm:h-8 sm:px-3" onClick={() => setHistoryOpen(true)} aria-label="history">
+                <HistoryIcon className="h-5 w-5 sm:h-3.5 sm:w-3.5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-11 px-5 sm:h-8 sm:px-3" onClick={() => setRewardsOpen(true)} aria-label="rewards info">
+                <Info className="h-5 w-5 sm:h-3.5 sm:w-3.5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-11 px-5 sm:h-8 sm:px-3" onClick={logout} aria-label="log out">
+                <LogOut className="h-5 w-5 sm:h-3.5 sm:w-3.5" />
+              </Button>
+            </div>
           </div>
         </header>
 
