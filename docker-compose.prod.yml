@@ -1,0 +1,122 @@
+# docker-compose.prod.yml — production stack (single EC2 + nginx + certbot).
+# Driven by the Makefile: `make prod-up` / `make prod-down`.
+# Direct invocation: docker compose -f docker-compose.prod.yml --env-file .env.production up -d
+#
+# Differences from the dev compose:
+# 1. Single edge container (nginx + bundled SPA) instead of separate vite + nginx services
+# 2. No source bind-mounts — code is baked into images
+# 3. backend runs with two replicas behind nginx round-robin
+
+name: leaderboard-prod
+
+services:
+  edge:
+    build:
+      context: .
+      dockerfile: infrastructure/edge/Dockerfile
+    image: ghcr.io/${GHCR_OWNER}/leaderboard-edge:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      LEADERBOARD_TLS:    ${LEADERBOARD_TLS:-0}
+      LEADERBOARD_DOMAIN: ${LEADERBOARD_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certbot-webroot:/var/www/certbot
+      - /etc/letsencrypt:/etc/letsencrypt:ro     # populated by host certbot
+    networks: [edge, internal]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: prod
+    image: ghcr.io/${GHCR_OWNER}/leaderboard-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["node", "dist/index.api.js"]
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      POSTGRES_URL: ${POSTGRES_URL}
+      MONGO_URL: ${MONGO_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      BCRYPT_COST: ${BCRYPT_COST:-10}
+      TAP_RATE_LIMIT_TTL_SEC: ${TAP_RATE_LIMIT_TTL_SEC:-1}
+    deploy:
+      replicas: 2          # two stateless replicas for the case requirement
+    depends_on:
+      postgres: { condition: service_healthy }
+      mongo:    { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [internal]
+
+  worker:
+    image: ghcr.io/${GHCR_OWNER}/leaderboard-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["node", "dist/index.worker.js"]
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      POSTGRES_URL: ${POSTGRES_URL}
+      MONGO_URL: ${MONGO_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      postgres: { condition: service_healthy }
+      mongo:    { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [internal]
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-leaderboard}
+      POSTGRES_USER:     ${POSTGRES_USER:-leaderboard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leaderboard}"]
+      interval: 10s
+      retries: 10
+    networks: [internal]
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 10s
+      retries: 10
+    networks: [internal]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 10
+    networks: [internal]
+
+volumes:
+  pgdata:
+  mongodata:
+  redisdata:
+  certbot-webroot:
+
+networks:
+  edge:     {}
+  internal: { internal: true }       # backend↔db isolation; only edge faces the public network
