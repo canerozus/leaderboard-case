@@ -1,6 +1,7 @@
 // backend/src/features/auth/auth.service.ts
 import bcrypt from 'bcrypt';
 import { loadConfig } from '../../config.js';
+import type { SignOptions } from 'jsonwebtoken';
 import { signToken } from '../../shared/lib/jwt.js';
 import { authRepo } from './auth.repo.js';
 import type { LoginDto, PublicUser, RegisterDto } from './auth.dto.js';
@@ -27,7 +28,7 @@ export const authService = {
       displayName: input.displayName,
       country: input.country,
     });
-    const token = signToken({ sub: user.id }, cfg.JWT_SECRET, cfg.JWT_EXPIRES_IN);
+    const token = signToken({ sub: user.id }, cfg.JWT_SECRET, cfg.JWT_EXPIRES_IN as SignOptions['expiresIn']);
     return { user: toPublic(user), token };
   },
 
@@ -37,7 +38,7 @@ export const authService = {
     if (!user) throw new AuthError('invalid_credentials', 'invalid credentials');
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) throw new AuthError('invalid_credentials', 'invalid credentials');
-    const token = signToken({ sub: user.id }, cfg.JWT_SECRET, cfg.JWT_EXPIRES_IN);
+    const token = signToken({ sub: user.id }, cfg.JWT_SECRET, cfg.JWT_EXPIRES_IN as SignOptions['expiresIn']);
     return { user: toPublic(user), token };
   },
 };
