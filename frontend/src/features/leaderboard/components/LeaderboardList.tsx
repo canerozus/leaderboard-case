@@ -76,6 +76,11 @@ function useRankFlashSet(entries: LbEntry[]): Set<string> {
     }
     lastRanks.current = next;
     if (changed.size === 0) return;
+    // The setState here is intentional: this is a transient visual effect
+    // (a 1.2 s flash on rank-change) driven by an external timer. The
+    // react-hooks/set-state-in-effect rule is too strict for this pattern —
+    // there's no external system to sync to other than the timer itself.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFlash(changed);
     const id = setTimeout(() => setFlash(new Set()), 1200);
     return () => clearTimeout(id);

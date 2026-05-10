@@ -1,5 +1,5 @@
 // backend/src/features/history/history.repo.ts
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { getDb, schema } from '../../shared/db/postgres.js';
 import type { HistoryEntry } from '../../shared/types/api.types.js';
 

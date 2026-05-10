@@ -1,6 +1,6 @@
 # Test Plan & Story — Leaderboard Case
 
-**Author:** Caner Özüş (with Claude Code)
+**Author:** Caner Özüş
 **Updated:** 2026-05-10
 
 This document describes how the leaderboard system was tested. It is a record of what we actually did, not an aspirational checklist. The story has three layers, each with a different actor, a different feedback loop, and a different goal:
@@ -147,20 +147,13 @@ This is materially different from a Playwright spec file. There is no `*.spec.ts
 
 ```bash
 # 1. Bring up everything (frontend + api + worker + postgres + mongo + redis)
-docker compose -f infrastructure/docker-compose.yml up -d --build
+make full-stack-up
 
-# 2. Wipe state (the seed is not idempotent)
-docker compose ... exec postgres psql -U leaderboard -d leaderboard \
-  -c "TRUNCATE users, weekly_history, payouts CASCADE;"
-docker compose ... exec mongo mongosh --quiet --eval \
-  "db.getSiblingDB('leaderboard').scores.deleteMany({})"
-docker compose ... exec redis redis-cli FLUSHDB
+# 2. Wipe state + re-seed in one shot (idempotent)
+make reset-db
 
-# 3. Seed 100 000 users + power-law scores; caner targets rank ~5000
-docker compose ... exec api npm run seed
-
-# 4. Background traffic (50 random users, 2s tick) so the board moves
-docker compose ... exec -T api npm run seed:traffic   # run in background
+# 3. Background traffic (50 random users, 2s tick) so the board moves
+make seed-traffic   # run in another terminal — Ctrl-C to stop
 
 # 5. Open the SPA — frontend on :5173, API on :3000
 ```

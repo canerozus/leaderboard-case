@@ -1,6 +1,6 @@
 {
-  "id": "6ed4dfd9-a959-4b68-b71a-8192bee23d02",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "851b2a8b-6198-4d68-b26f-4d79d625b72b",
+  "prevId": "6ed4dfd9-a959-4b68-b71a-8192bee23d02",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -8,13 +8,6 @@
       "name": "payouts",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "week_id": {
           "name": "week_id",
           "type": "integer",
@@ -63,17 +56,16 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "payouts_week_id_user_id_unique": {
-          "name": "payouts_week_id_user_id_unique",
-          "nullsNotDistinct": false,
+      "compositePrimaryKeys": {
+        "payouts_week_id_user_id_pk": {
+          "name": "payouts_week_id_user_id_pk",
           "columns": [
             "week_id",
             "user_id"
           ]
         }
       },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

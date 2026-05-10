@@ -13,7 +13,7 @@
     "test:unit": "vitest run src/",
     "test:integration": "vitest run tests/integration/",
     "test:watch": "vitest",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

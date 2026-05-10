@@ -9,7 +9,7 @@
 # against frontend/ as its first stage.
 
 # --- base: install deps once, reused by dev + build ---------------------------
-FROM node:24-alpine AS base
+FROM node:24-bookworm-slim AS base
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci

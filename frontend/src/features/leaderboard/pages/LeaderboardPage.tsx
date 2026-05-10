@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { History as HistoryIcon, Info, LogOut, Trophy } from 'lucide-react';
 import { useTop, useMe, useLbState } from '../hooks/useLeaderboard';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -23,7 +23,6 @@ export function LeaderboardPage() {
 
   const [rewardsOpen, setRewardsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [selfBandVisible, setSelfBandVisible] = useState(false);
   const meRowAnchor = useRef<HTMLDivElement>(null);
 
   const myUserId = useAuthStore((s) => s.user?.id);
@@ -36,10 +35,8 @@ export function LeaderboardPage() {
     return [...baseEntries, ...me.data.neighbors];
   }, [top.data, me.data, myUserId]);
 
-  useEffect(() => {
-    if (!me.data?.inTop100 || me.data.rank === null) { setSelfBandVisible(false); return; }
-    setSelfBandVisible(me.data.rank > 8);
-  }, [me.data]);
+  // Derived from server state — no useState + useEffect dance needed.
+  const selfBandVisible = !!(me.data?.inTop100 && me.data.rank !== null && me.data.rank > 8);
 
   if (top.isLoading || me.isLoading || state.isLoading) {
     return (

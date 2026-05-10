@@ -8,6 +8,25 @@ Submitted as a Panteon take-home case.
 - **Demo account:** `caner` / `leaderboard` (lands at rank ~5 000 against the 100 000-user seed)
 - **Tech:** Node 24 + TypeScript, Express, PostgreSQL, MongoDB, Redis · React 19 + Vite 8 + Tailwind 4 · Docker Compose for everything
 
+## A note on the live demo
+
+The deployed leaderboard reflects a **static seeded state** — the demo-traffic simulator (`backend/seed/demo-traffic.ts`) is intentionally **not** running in production. Two reasons:
+
+1. It would write fake winners into `weekly_history` every Monday, polluting the archive with synthetic data forever.
+2. The architecture is fully demonstrated without it. Everything that defines the product is visible from the deployed URL: the self+neighbors view (caner is at rank ~5 000), the podium, the countdown ticking against UTC, and — most importantly — the optimistic UI when you click **Tap to earn**.
+
+So the prize pool sits still by design. To see motion you have two options:
+
+- Click **Tap to earn** on the deployed URL. The optimistic increment lands instantly; the next 7-second `/leaderboard/me` poll reconciles with the server. That round-trip is the load-bearing UX claim of this submission.
+- Run the simulator locally:
+
+  ```bash
+  git clone <repo-url> && cd leaderboard-case
+  make full-stack-up && make seed && make seed-traffic
+  ```
+
+The full rationale ("not a worker job, not deployed to production") is in `DESIGN.md` §5.4 and §10.3.
+
 ## What this delivers
 
 - **`POST /score/submit`** durable in MongoDB, best-effort cached in Redis. The endpoint never hides a Mongo failure behind a Redis success.
@@ -18,7 +37,7 @@ Submitted as a Panteon take-home case.
 - **Fail-open architecture** — every Redis call is wrapped in a single `CacheService` that returns `null` on failure. The whole system continues to serve correct data from MongoDB when Redis is down. Verified by an integration test that **stops the Redis container mid-test** and asserts the API stays correct.
 - **A polished, mobile-first SPA** with optimistic Tap-to-earn, polled state (top + me at 7 s, prize pool/countdown at 5 s), virtualized list, two intentional motion moments (the prize-pool ticker, the rank-change flash), and a self+neighbors view that solves the "I'm rank 5 317, where am I?" problem without a second screen.
 
-The full design rationale — datastore role split, fail-open contract, weekly reset semantics, scale-out story — is in **[`docs/DESIGN.md`](docs/DESIGN.md)**.
+The full design rationale — datastore role split, fail-open contract, weekly reset semantics, scale-out story — is in **[`DESIGN.md`](DESIGN.md)**.
 
 ## How AI was used
 
@@ -57,7 +76,7 @@ Open http://localhost:5173 → log in as `caner` / `leaderboard`. The seeded acc
 
 ## How it's tested
 
-Three layers, fully documented in **[`docs/TEST.md`](docs/TEST.md)**:
+Three layers, fully documented in **[`TEST.md`](TEST.md)**:
 
 | Layer | Tools | Tests | Runtime |
 |---|---|---|---|
@@ -73,7 +92,7 @@ make typecheck-frontend          # tsc -b --noEmit
 make build-frontend              # production bundle
 ```
 
-Browser regression is driven via Claude Code + the Playwright MCP plugin — the "test" is the checklist in `docs/TEST.md` itself, not a separate `*.spec.ts` file. To re-run, ask Claude: *"run the regression in `docs/TEST.md` against the live stack."*
+Browser regression is driven via Claude Code + the Playwright MCP plugin — the "test" is the checklist in `TEST.md` itself, not a separate `*.spec.ts` file. To re-run, ask Claude: *"run the regression in `TEST.md` against the live stack."*
 
 The standout test is `backend/tests/integration/cache-failover.test.ts` — it boots Postgres + Mongo + Redis via testcontainers, kills the Redis container mid-test, and asserts `/score/submit`, `/leaderboard/top`, and `/leaderboard/me` all keep returning correct data via the Mongo fallback. That test is the load-bearing claim of this submission.
 

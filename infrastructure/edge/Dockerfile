@@ -7,8 +7,8 @@
 # LEADERBOARD_TLS at container start, and substitutes LEADERBOARD_DOMAIN for the
 # real value from the env.
 
-ARG NODE_VERSION=24-alpine
-ARG NGINX_VERSION=1.27-alpine
+ARG NODE_VERSION=24-bookworm-slim
+ARG NGINX_VERSION=1.27
 
 # ──────── frontend build ────────
 FROM node:${NODE_VERSION} AS frontend
@@ -23,9 +23,9 @@ RUN npm run build
 # ──────── edge runtime ────────
 FROM nginx:${NGINX_VERSION} AS runtime
 
-# Templates live OUTSIDE /etc/nginx/templates/ so nginx-alpine's bundled
-# 20-envsubst-on-templates.sh doesn't double-process them and corrupt the $host /
-# $remote_addr variables (which look like env vars to envsubst).
+# Templates live OUTSIDE /etc/nginx/templates/ so the official nginx image's
+# bundled 20-envsubst-on-templates.sh doesn't double-process them and corrupt
+# the $host / $remote_addr variables (which look like env vars to envsubst).
 COPY infrastructure/edge/nginx.http.conf  /etc/nginx/leaderboard/nginx.http.conf
 COPY infrastructure/edge/nginx.https.conf /etc/nginx/leaderboard/nginx.https.conf
 COPY --from=frontend /app/dist /usr/share/nginx/html

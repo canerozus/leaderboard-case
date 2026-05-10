@@ -1,11 +1,14 @@
-# backend/Dockerfile — multi-stage; node:24-alpine
+# backend/Dockerfile — multi-stage; node:24-bookworm-slim
 # Stages:
 #   base  — install all deps (used as parent for dev/build/test)
 #   dev   — tsx watch; mounted source via compose volume
 #   build — tsc compile to dist/
 #   prod  — minimal runtime: dist/ + production deps, non-root user
+#
+# Debian-based (bookworm-slim) instead of alpine: glibc avoids native-module
+# compatibility surprises with bcrypt and the like.
 
-ARG NODE_VERSION=24-alpine
+ARG NODE_VERSION=24-bookworm-slim
 
 # ─── base ───────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS base
@@ -33,7 +36,7 @@ RUN mkdir -p migrations && npm run build
 FROM node:${NODE_VERSION} AS prod
 WORKDIR /app
 ENV NODE_ENV=production
-RUN addgroup -S app && adduser -S app -G app
+RUN groupadd --system app && useradd --system --gid app app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
@@ -41,5 +44,5 @@ COPY --from=build /app/migrations ./migrations
 USER app
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1
-CMD ["node", "dist/index.api.js"]
+  CMD wget -qO- http://127.0.0.1:3000/api/v1/healthz || exit 1
+CMD ["node", "dist/src/index.api.js"]
