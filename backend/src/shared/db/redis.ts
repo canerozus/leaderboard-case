@@ -14,7 +14,7 @@ export function getRedis(): Redis {
     connectTimeout: 2_000,
     lazyConnect: false,
   });
-  client.on('error', (err) => logger.warn({ err: err.message }, 'redis client error'));
+  client.on('error', (err) => logger.warn({ err }, 'redis client error'));
   return client;
 }
 
