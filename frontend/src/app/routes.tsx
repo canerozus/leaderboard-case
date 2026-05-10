@@ -1,13 +1,7 @@
-import { Navigate, Outlet, createBrowserRouter } from 'react-router-dom';
+import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { AuthPage } from '@/features/auth/pages/AuthPage';
 import { LeaderboardPage } from '@/features/leaderboard/pages/LeaderboardPage';
-import { useAuthStore } from '@/features/auth/store/authStore';
-
-function RequireAuth() {
-  const isAuthed = useAuthStore((s) => s.isAuthenticated());
-  if (!isAuthed) return <Navigate to="/auth" replace />;
-  return <Outlet />;
-}
+import { RequireAuth } from './RequireAuth';
 
 export const router = createBrowserRouter([
   { path: '/auth', element: <AuthPage /> },

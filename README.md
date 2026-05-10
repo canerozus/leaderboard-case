@@ -18,7 +18,7 @@ Submitted as a Panteon take-home case.
 - **Fail-open architecture** — every Redis call is wrapped in a single `CacheService` that returns `null` on failure. The whole system continues to serve correct data from MongoDB when Redis is down. Verified by an integration test that **stops the Redis container mid-test** and asserts the API stays correct.
 - **A polished, mobile-first SPA** with optimistic Tap-to-earn, polled state (top + me at 7 s, prize pool/countdown at 5 s), virtualized list, two intentional motion moments (the prize-pool ticker, the rank-change flash), and a self+neighbors view that solves the "I'm rank 5 317, where am I?" problem without a second screen.
 
-The full design rationale — datastore role split, fail-open contract, weekly reset semantics, scale-out story — is in **[`docs/DESIGN.md`](docs/DESIGN.md)**.
+The full design rationale — datastore role split, fail-open contract, weekly reset semantics, scale-out story — is in **[`DESIGN.md`](DESIGN.md)**.
 
 ## How AI was used
 
@@ -57,7 +57,7 @@ Open http://localhost:5173 → log in as `caner` / `leaderboard`. The seeded acc
 
 ## How it's tested
 
-Three layers, fully documented in **[`docs/TEST.md`](docs/TEST.md)**:
+Three layers, fully documented in **[`TEST.md`](TEST.md)**:
 
 | Layer | Tools | Tests | Runtime |
 |---|---|---|---|
@@ -73,7 +73,7 @@ make typecheck-frontend          # tsc -b --noEmit
 make build-frontend              # production bundle
 ```
 
-Browser regression is driven via Claude Code + the Playwright MCP plugin — the "test" is the checklist in `docs/TEST.md` itself, not a separate `*.spec.ts` file. To re-run, ask Claude: *"run the regression in `docs/TEST.md` against the live stack."*
+Browser regression is driven via Claude Code + the Playwright MCP plugin — the "test" is the checklist in `TEST.md` itself, not a separate `*.spec.ts` file. To re-run, ask Claude: *"run the regression in `TEST.md` against the live stack."*
 
 The standout test is `backend/tests/integration/cache-failover.test.ts` — it boots Postgres + Mongo + Redis via testcontainers, kills the Redis container mid-test, and asserts `/score/submit`, `/leaderboard/top`, and `/leaderboard/me` all keep returning correct data via the Mongo fallback. That test is the load-bearing claim of this submission.
 

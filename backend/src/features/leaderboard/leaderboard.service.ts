@@ -2,7 +2,6 @@
 import { currentWeekId } from '../../shared/lib/weekId.js';
 import { logger } from '../../shared/lib/logger.js';
 import type { CacheService } from '../../shared/cache/cache.service.js';
-import type { LbEntry } from '../../shared/types/api.types.js';
 import { ScoreModel } from '../score/score.model.js';
 import { scoreRepo } from '../score/score.repo.js';
 import { hydrateRankedEntries } from './profile.lookup.js';

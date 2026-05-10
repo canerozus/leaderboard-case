@@ -18,13 +18,13 @@ fi
 
 # Inline ESM script run by node --input-type=module. Imports the compiled payout
 # service from the production image and triggers a single reset cycle.
-SCRIPT='import { makePayoutService } from "./dist/features/payout/payout.service.js";
-import { CacheService } from "./dist/shared/cache/cache.service.js";
-import { connectMongo, closeMongo } from "./dist/shared/db/mongo.js";
-import { getPool, closePostgres } from "./dist/shared/db/postgres.js";
-import { closeRedis, getRedis } from "./dist/shared/db/redis.js";
-import { logger } from "./dist/shared/lib/logger.js";
-import { currentWeekId } from "./dist/shared/lib/weekId.js";
+SCRIPT='import { makePayoutService } from "./dist/src/features/payout/payout.service.js";
+import { CacheService } from "./dist/src/shared/cache/cache.service.js";
+import { connectMongo, closeMongo } from "./dist/src/shared/db/mongo.js";
+import { getPool, closePostgres } from "./dist/src/shared/db/postgres.js";
+import { closeRedis, getRedis } from "./dist/src/shared/db/redis.js";
+import { logger } from "./dist/src/shared/lib/logger.js";
+import { currentWeekId } from "./dist/src/shared/lib/weekId.js";
 
 const arg = process.argv[2];
 const weekId = arg ? Number(arg) : currentWeekId();

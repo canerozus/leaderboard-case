@@ -41,5 +41,5 @@ COPY --from=build /app/migrations ./migrations
 USER app
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1
-CMD ["node", "dist/index.api.js"]
+  CMD wget -qO- http://127.0.0.1:3000/api/v1/healthz || exit 1
+CMD ["node", "dist/src/index.api.js"]

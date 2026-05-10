@@ -1,16 +1,22 @@
 // backend/src/shared/cache/cache.service.test.ts
 import { describe, test, expect, vi } from 'vitest';
 import type Redis from 'ioredis';
+import type { Logger } from 'pino';
 import { CacheService } from './cache.service.js';
 
-const ALWAYS_THROW: any = new Proxy({}, {
+// Proxy that fails every method — stand-in for a fully-down Redis client.
+// `unknown as Redis` because typing every method on Redis (200+) is impractical.
+const ALWAYS_THROW = new Proxy({}, {
   get: () => () => Promise.reject(new Error('redis down')),
-});
+}) as unknown as Redis;
 
-const silentLogger: any = { warn: vi.fn(), info: vi.fn(), debug: vi.fn(), error: vi.fn(), fatal: vi.fn(), trace: vi.fn() };
+const silentLogger = {
+  warn: vi.fn(), info: vi.fn(), debug: vi.fn(),
+  error: vi.fn(), fatal: vi.fn(), trace: vi.fn(),
+} as unknown as Logger;
 
 function makeCache(): CacheService {
-  return new CacheService(ALWAYS_THROW as Redis, silentLogger);
+  return new CacheService(ALWAYS_THROW, silentLogger);
 }
 
 describe('CacheService — fail-open contract: every method returns null on Redis failure', () => {

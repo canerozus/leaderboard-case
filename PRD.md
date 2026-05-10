@@ -6,7 +6,7 @@
 
 The case framing in one paragraph: an idle/clicker game with ~10 M registered players and ~2 M DAU has a leaderboard that "works but barely." Players complain the page is slow, can't find their own rank, and freezes mid-scroll. Product wants the leaderboard to feel **instant**, weekly rewards to go out automatically, and a screen designed for competitive players. This document captures the product cut of that ask — goals, scope, and what we'll accept as "done."
 
-The engineering cut (architecture, fail-open contract, data model, deploy topology) lives in **[`docs/DESIGN.md`](docs/DESIGN.md)**. This file is the *what* and *why*; that one is the *how*.
+The engineering cut (architecture, fail-open contract, data model, deploy topology) lives in **[`DESIGN.md`](DESIGN.md)**. This file is the *what* and *why*; that one is the *how*.
 
 ---
 
@@ -32,7 +32,7 @@ The engineering cut (architecture, fail-open contract, data model, deploy topolo
 
 ## 2. Acceptance criteria
 
-The system is "done" when each of these is true. These are the exact items the regression in [`docs/TEST.md`](docs/TEST.md) verifies, expressed here in product language.
+The system is "done" when each of these is true. These are the exact items the regression in [`TEST.md`](TEST.md) verifies, expressed here in product language.
 
 | # | Criterion | Status |
 |---|---|---|

@@ -1,6 +1,6 @@
 # Architecture
 
-A standalone tour of the system. The full engineering rationale (data model, every Redis key, every aggregation pipeline, the rehydration race analysis) lives in `docs/DESIGN.md`. This document is the reviewer-friendly **TL;DR with diagrams** — focused on the case rubric: cloud usage, scalability, performance, and suitability for the scenario.
+A standalone tour of the system. The full engineering rationale (data model, every Redis key, every aggregation pipeline, the rehydration race analysis) lives in `DESIGN.md`. This document is the reviewer-friendly **TL;DR with diagrams** — focused on the case rubric: cloud usage, scalability, performance, and suitability for the scenario.
 
 ## Topology
 
