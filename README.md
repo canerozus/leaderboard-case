@@ -10,6 +10,8 @@ Submitted as a Panteon take-home case.
 
 > **HTTPS note:** the deployed instance runs HTTP-only. Let's Encrypt's multi-region validators kept timing out against Duck DNS's sometimes-laggy NS servers, and burning through LE's 5-failures-per-hour rate limit chasing a free-DNS quirk wasn't a good trade for the submission deadline. The TLS path is fully built — `infrastructure/edge/nginx.https.conf`, the `LEADERBOARD_TLS` entrypoint switch, and `infrastructure/scripts/certbot-renew.sh` are all in the repo and ready to go the moment the deployment moves behind a real domain (or onto ALB + ACM per `ARCHITECTURE.md`). Until then, Chrome will flag the URL as "Not secure" — the app itself is unaffected.
 
+> **Weekly reset is live (observed in production):** the deploy spanned a Monday 00:00 UTC week boundary, and the worker's `node-cron` job fired on schedule — it aggregated week 2939's top 1 000 into `weekly_history`, wrote the top-100 `payouts` rows in a single Postgres transaction, dropped the closed-week Redis keys, and the API rolled over to week 2940 cleanly. The reset is idempotent (`pg_try_advisory_lock` + composite PK on `payouts`). After the rollover the live URL was reseeded to repopulate the new week with the same deterministic 100k-user power-law so a reviewer opening it at any time sees a populated leaderboard — `DESIGN.md §5.3` walks through the exact flow.
+
 ## A note on the live demo
 
 The deployed leaderboard reflects a **static seeded state** — the demo-traffic simulator (`backend/seed/demo-traffic.ts`) is intentionally **not** running in production. Two reasons:

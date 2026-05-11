@@ -20,7 +20,7 @@ Its core design challenge is **instant-feeling reads at 2 M-DAU scale** while ke
 ### 2.1 In Scope
 
 - Username + password sign-up and login, JWT bearer auth
-- A single global leaderboard, scoped per ISO-aligned week (Mon 00:30 UTC)
+- A single global leaderboard, scoped per ISO-aligned week (Mon 00:00:30 UTC)
 - Score submission via `POST /score/submit` (the API a real game client would call)
 - A demo **Tap to earn** button in the SPA so reviewers can move the board themselves
 - Top-100 read for the current week, refreshed by the client every ~7 s
