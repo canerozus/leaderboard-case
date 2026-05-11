@@ -3,7 +3,7 @@
 **Author:** Caner Özüş
 **Updated:** 2026-05-10
 
-This document describes how the leaderboard system was tested. It is a record of what we actually did, not an aspirational checklist. The story has three layers, each with a different actor, a different feedback loop, and a different goal:
+This document describes how the leaderboard system was tested. It is a record of what I actually did, not an aspirational checklist. The story has three layers, each with a different actor, a different feedback loop, and a different goal:
 
 1. **Code tests** — written by a human + AI, run by a developer or CI. Catch regressions in pure logic.
 2. **Agent tests** — Claude Code's per-step verification loop while writing code (build, typecheck, vitest, curl). Catch breakage *as code is written*, not after.
@@ -23,7 +23,7 @@ Counts as of the last green run:
 
 ### Methodology: TDD where it earns its keep
 
-Not every file needed tests, and we did not write any test we did not believe in. The rule was: **TDD when the contract matters, no test when the code is its own contract**.
+Not every file needed tests, and I did not write any test I did not believe in. The rule was: **TDD when the contract matters, no test when the code is its own contract**.
 
 - TDD'd: pure helpers (`prizes`, `weekId`, `cn`, `format`), state stores (zustand), data classes (`ApiClient`, `CacheService`), components whose behavior is non-obvious (`AuthForm`, `LeaderboardRow`).
 - Skipped tests on: routing tables, page-level composition, scaffold files, anything that's a thin wire-up of already-tested pieces.
@@ -194,9 +194,9 @@ The test "script" is this document. To re-run:
 
 1. Bring up the stack (block above).
 2. Seed + start demo traffic.
-3. In Claude Code, ask: *"Run the regression in `docs/testplan.md` against the live stack."*
+3. In Claude Code, ask: *"Run the regression with Playwright plugin (if its installed or install) against the live stack."*
 
-The agent will pick up the checklist and drive Playwright MCP through it. There is no separate file to keep in sync — the test plan **is** the test.
+The agent will drive Playwright MCP through it. There is no separate file to keep in sync.
 
 ---
 

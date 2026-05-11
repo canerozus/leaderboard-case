@@ -98,7 +98,7 @@ The fuller BMAD flow above. The benefit isn't better code at this scope — it's
 - **Single root `.env`** consumed by backend, Vite (`envDir: '..'`), and docker-compose (`env_file: ../.env`) — rejected per-package envs after starting one and consolidating.
 - **Plan-per-branch with Conventional Commits naming** (`feat/backend-api`, `feat/frontend-spa`, `docs/case-deliverables`, `infra/prod-deploy`). One chat = one branch = one PR. Per-task or per-phase branching would have produced ~97 PRs — drowning.
 - **Stage-based (sequence-based, not calendar-based) cross-plan coordination markers** in plan files — gates trigger on phase completion, not on wall clock.
-- **`docs/` is gitignored** — the implementation plans (`docs/superpowers/plans/*.md`) are local-only artifacts for the executing agents; the public repo carries only DESIGN.md, AI_WORKFLOW.md, PRD.md, README.md, and code.
+- **`docs/` is gitignored** — the implementation plans (`docs/superpowers/plans/*.md`) are local-only artifacts for the executing agents; the public repo carries only DESIGN.md, AI_WORKFLOW.md, PRD.md, README.md, TEST.md and code.
 
 ## Honest notes
 

@@ -118,7 +118,7 @@ The current Compose deployment is sized for the case demo. The path to real load
 
 The API and worker move to Fargate with **zero code changes** — they're stateless and read all config from env. Two attention points: (a) the cron must run as a singleton task to respect the advisory-lock contract, (b) the demo seed-traffic generator stays out of production deployments (it lives in `seed/`, not in any deployable image).
 
-## What we'd add with more time
+## What I wouldd add with more time
 
 The deploy story above (`Atlas + ElastiCache + RDS + ECR + Fargate + ALB/ACM + CloudFront/S3 + Secrets Manager + CloudWatch + GitHub Actions`) is the headline item — the current single-EC2 + Compose setup is a deliberate trade-off for the case timeline. The README's "Next steps" section walks through each piece of that move. Beyond infra:
 

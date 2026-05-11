@@ -1,7 +1,7 @@
 # Leaderboard Case — Design Spec
 
 **Date:** 2026-05-09
-**Author:** Caner Özüş (with Claude Code)
+**Author:** Caner Özüş
 **Context:** Take-home case — design and ship a weekly leaderboard for an idle/clicker game with ~10M registered and ~2M DAU.
 
 ---
@@ -50,7 +50,7 @@
 - API processes are stateless — JWT-only, no sessions, no in-memory caches that would diverge across replicas. Scaling = `--scale api=N` behind nginx.
 - Worker is a single instance (cron + simulator).
 - All data stores run as containers on the same EC2 host with persistent volumes.
-- **Local dev runs the entire stack in Docker Compose** — postgres + mongo + redis + api + worker + frontend (Vite dev server). `docker compose -f infrastructure/docker-compose.yml up` brings up everything; source dirs are bind-mounted with anonymous volumes shadowing `node_modules`, so `tsx watch` (api/worker) and `vite --host 0.0.0.0` (frontend) hot-reload on host edits. Tests still run on the host with testcontainers spawning their own ephemeral containers, so dev compose is independent of the test runner. Production compose (Plan 3) replaces the dev `frontend` service with a single `edge` container (nginx + bundled SPA + reverse proxy + TLS).
+- **Local dev runs the entire stack in Docker Compose** — postgres + mongo + redis + api + worker + frontend (Vite dev server). `make full-stack-up` (wraps `docker compose up -d --build`) brings up everything; source dirs are bind-mounted with named volumes shadowing `node_modules`, so `tsx watch` (api/worker) and `vite --host 0.0.0.0` (frontend) hot-reload on host edits. Tests still run on the host with testcontainers spawning their own ephemeral containers, so dev compose is independent of the test runner. The **production compose** (`docker-compose.prod.yml`, separate file at the same level) replaces the dev `frontend` service with a single `edge` container (nginx + bundled SPA + reverse proxy + TLS) and isolates the backend ↔ DB traffic onto an `internal`-only Docker network.
 
 ### 2.2 Datastore role split
 
@@ -75,8 +75,8 @@
 | Validation | zod | Single source of truth for env, DTOs |
 | Logging | pino | Structured JSON, fast |
 | Cron | `node-cron` in worker process | One job, no need for BullMQ |
-| Frontend | Vite + React 18 + TypeScript | SPA, fastest path to deploy |
-| Styling | Tailwind CSS + clsx + tailwind-merge (`cn` helper) | User preference |
+| Frontend | Vite 8 + React 19 + TypeScript 6 | SPA, fastest path to deploy |
+| Styling | Tailwind CSS 4 (`@import "tailwindcss"` + `@theme` in `globals.css`, no JS config) + clsx + tailwind-merge (`cn` helper) | Tailwind 4's CSS-first config is the current shape; design tokens live in `@theme` |
 | Server state | TanStack Query | Polling, caching, optimistic updates |
 | Client state | Zustand | User preference; minimal stores for auth + optimistic |
 | List virtualization | `@tanstack/react-virtual` | Top 100 isn't huge, but virtualization is cheap insurance for mobile |
@@ -113,15 +113,14 @@ CREATE TABLE weekly_history (
 );
 CREATE INDEX ON weekly_history (user_id, week_id DESC);
 
--- Top-100 winners per week. Idempotent via UNIQUE.
+-- Top-100 winners per week. Idempotent via the composite PK.
 CREATE TABLE payouts (
-  id        uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   week_id   integer NOT NULL,
   user_id   uuid    NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   rank      integer NOT NULL,
   amount    numeric(20, 2) NOT NULL,
   paid_at   timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (week_id, user_id)
+  PRIMARY KEY (week_id, user_id)
 );
 CREATE INDEX ON payouts (user_id, week_id DESC);
 ```
@@ -459,11 +458,13 @@ frontend/
         api/, components/HistoryDrawer.tsx, hooks/, pages/
     shared/
       api/client.ts               // fetch wrapper, JWT interceptor, 401→logout
-      components/                 // Button, Modal, Skeleton
+      components/                 // Button, Modal, Skeleton, Spinner
       hooks/
       lib/cn.ts                   // clsx + tailwind-merge
-    styles/globals.css            // @tailwind + design tokens
+    styles/globals.css            // `@import "tailwindcss"` + `@theme` design tokens (Tailwind 4)
     main.tsx
+  tests/
+    setup.ts                      // happy-dom + RTL setup; loaded by vitest setupFiles
 ```
 
 ### 6.4 State separation
@@ -581,7 +582,7 @@ backend/
       score-flow.test.ts            // testcontainers: real Mongo + Redis
       payout-flow.test.ts           // testcontainers: real Mongo + Postgres
       cache-failover.test.ts        // stop Redis mid-test → assert API still serves correctly
-  Dockerfile                        // FROM node:24-alpine
+  Dockerfile                        // FROM node:24-bookworm-slim
   package.json
   tsconfig.json
 ```
@@ -757,31 +758,26 @@ We don't mock Redis, Mongo, or Postgres in integration tests. Mocks of stateful 
 
 ```
 leaderboard-case/
-├── backend/                  // independent project: own package.json, lockfile, README
-├── frontend/                 // independent project: own package.json, lockfile, README
+├── Makefile                        // `make help` lists every command (dev + prod + ops)
+├── docker-compose.yml              // local dev — full stack on one network
+├── docker-compose.prod.yml         // production — edge + backend × 2 + worker + dbs, dual-network isolation
+├── .env.development                // dev env (committed; see .gitignore for the take-home rationale)
+├── .env.production                 // prod env (committed; DOMAIN + EMAIL edited on the host before first deploy)
+├── backend/                        // independent project — own package.json, lockfile, Dockerfile (base/dev/build/prod)
+├── frontend/                       // independent project — own package.json, lockfile, Dockerfile (base/dev/build only)
 ├── infrastructure/
-│   ├── docker-compose.yml          // local dev (postgres, redis, mongo, backend, worker, frontend)
-│   ├── docker-compose.prod.yml     // EC2 stack (+ nginx + certbot, no host-mounted volumes for secrets)
-│   ├── nginx/
-│   │   ├── nginx.conf
-│   │   └── conf.d/site.conf
-│   ├── scripts/
-│   │   ├── deploy.sh               // ssh + docker compose pull && up -d
-│   │   ├── seed.sh
-│   │   └── reset-week.sh           // manual payout trigger for demo
-│   ├── ec2/
-│   │   └── user-data.sh            // EC2 first-boot: install docker, certbot
-│   └── .env.example
-├── docs/
-│   ├── DESIGN.md             // this document — engineering design spec
-│   ├── PRD.md                // product requirements: goals, scope, out-of-scope, acceptance criteria
-│   ├── ARCHITECTURE.md       // produced via bmad-create-architecture; diagrams + scale-out story
-│   └── TEST_RESULTS.md       // regression test outputs and deploy-readiness gate
-├── README.md                 // architecture overview, run instructions, deployed URL
-└── AI_WORKFLOW.md            // tools/skills used at each stage, where AI helped vs. where the calls were mine
+│   ├── edge/                       // nginx + bundled SPA Dockerfile + http/https nginx configs
+│   ├── ec2/                        // first-boot user-data.sh + provisioning README
+│   └── scripts/                    // deploy.sh, seed.sh, reset-week.sh, certbot-renew.sh
+├── README.md                       // case-facing entry: deployed URL, run instructions, repo layout
+├── DESIGN.md                       // this document — engineering design spec
+├── PRD.md                          // product requirements (Overview / Scope / Business Rules / Stories)
+├── ARCHITECTURE.md                 // reviewer-friendly TL;DR with diagrams + scale-out path
+├── TEST.md                         // 3-layer test story + regression checklist + prod smoke
+└── AI_WORKFLOW.md                  // tools, process, where AI helped vs. where the calls were mine
 ```
 
-Each app folder is independent. No workspace tooling at the root. The two projects share **no source code** — types are duplicated where needed (typically just `LbEntry`, `HistoryEntry`, and a couple of API shapes), per the "client and server in separate projects" requirement.
+Each app folder is independent. No workspace tooling at the root (no `package.json`, no `pnpm-workspace.yaml`, no `turbo.json`). The two projects share **no source code** — types are hand-duplicated where needed (typically just `LbEntry`, `HistoryEntry`, and a couple of API shapes), per the "client and server in separate projects" requirement.
 
 ---
 
@@ -795,8 +791,8 @@ Single EC2 instance (Ubuntu 22.04, t3.small or t3.medium), public elastic IP, A-
 
 ```
 nginx       → 80/443, certbot sidecar, proxies /api → backend, serves /static SPA
-backend     × 2  (Express, command: node dist/index.api.js)        # node:24-alpine
-worker      × 1  (cron, command: node dist/index.worker.js)        # node:24-alpine
+backend     × 2  (Express, command: node dist/src/index.api.js)    # node:24-bookworm-slim
+worker      × 1  (cron, command: node dist/src/index.worker.js)    # node:24-bookworm-slim
 postgres    × 1  (volume-mounted /var/lib/postgresql/data)
 redis       × 1  (AOF on, volume-mounted)
 mongo       × 1  (volume-mounted; primary score store — backups configured)
